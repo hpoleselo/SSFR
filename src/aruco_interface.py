@@ -51,6 +51,7 @@ class ArucoInterface(object):
         cap = cv2.VideoCapture(1)
         
         # Implement exception handling for opening the camera
+        # check for lsusb and logitech ls /dev/video1
             #print("Could not find the camera connected, check if the index is correct or if the camera is connected.")
             #print("$ lsusb or $  ")
             #sys.exit()
@@ -74,16 +75,19 @@ class ArucoInterface(object):
                 # Estimate pose of each marker and return the values rvet and tvec, NOTE THAT those are DIFFERENT from camera coefficents
                 # The second parameter is the size of the marker in meters
                 # The length of these vectors are just one, meaning they have 3 columns but just one row! And they store the real pose value
-                rvec, tvec,_ = aruco.estimatePoseSingleMarkers(corners[0], marker_size, camera_matrix, dist_matrix)
+                rvec, tvec, _ = aruco.estimatePoseSingleMarkers(corners[0], marker_size, camera_matrix, dist_matrix)
                 #(rvec-tvec).any() # get rid of that nasty numpy value array error
                 #print 'Rotation Vector: ', rvec
-                print 'Translation Vector:', tvec
+                #print 'Translation Vector:', tvec
                 aruco.drawAxis(frame, camera_matrix, dist_matrix, rvec[0], tvec[0], 0.1)
                 # Drawing a square on the identified marker
                 aruco.drawDetectedMarkers(frame, corners)
 
                 ###### Draw ID on the screen #####
                 cv2.putText(frame, "Id: " + str(ids), (0,64), font, 1, (0,255,0),2,cv2.LINE_AA)
+
+                # Only get the x position of the marker
+                return tvec[0][0][0]
 
 
             # Display the resulting frame
@@ -93,9 +97,6 @@ class ArucoInterface(object):
         # Maybe add a method that exits and we can call it on the main method 
         cap.release()
         cv2.destroyAllWindows()
-        _rvec = np.copy(rvec)
-        _tvec = np.copy(tvec)
-        return _rvec, _tvec
 
 
 def main():
