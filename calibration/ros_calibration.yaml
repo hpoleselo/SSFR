@@ -1,0 +1,22 @@
+# put this file in ~/.ros/camera_info/camera.yaml
+# if the directory camera_info doesnt exist just create one
+image_width: 640
+image_height: 480
+camera_name: narrow_stereo
+camera_matrix:
+  rows: 3
+  cols: 3
+  data: [845.914077, 0.000000, 294.182334, 0.000000, 846.304643, 177.602838, 0.000000, 0.000000, 1.000000]
+distortion_model: plumb_bob
+distortion_coefficients:
+  rows: 1
+  cols: 5
+  data: [0.303257, -1.048417, -0.036189, -0.018661, 0.000000]
+rectification_matrix:
+  rows: 3
+  cols: 3
+  data: [1.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 1.000000]
+projection_matrix:
+  rows: 3
+  cols: 4
+  data: [871.161682, 0.000000, 286.724297, 0.000000, 0.000000, 860.873718, 167.980228, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000]
