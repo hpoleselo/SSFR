@@ -1,50 +1,87 @@
-import RPi.GPIO as GPIO
-import time
+# Python Script
+# https://www.electronicshub.org/raspberry-pi-l298n-interface-tutorial-control-dc-motor-l298n-raspberry-pi/
+
+import RPi.GPIO as GPIO          
+from time import sleep
+
+in1 = 24
+in2 = 23
+en = 25
+temp1=1
+
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(in1,GPIO.OUT)
+GPIO.setup(in2,GPIO.OUT)
+GPIO.setup(en,GPIO.OUT)
+GPIO.output(in1,GPIO.LOW)
+GPIO.output(in2,GPIO.LOW)
+p=GPIO.PWM(en,1000)
+
+p.start(25)
+print("\n")
+print("The default speed & direction of motor is LOW & Forward.....")
+print("r-run s-stop f-forward b-backward l-low m-medium h-high e-exit")
+print("\n")    
+
+while(1):
+
+    x=raw_input()
+    
+    if x=='r':
+        print("run")
+        if(temp1==1):
+         GPIO.output(in1,GPIO.HIGH)
+         GPIO.output(in2,GPIO.LOW)
+         print("forward")
+         x='z'
+        else:
+         GPIO.output(in1,GPIO.LOW)
+         GPIO.output(in2,GPIO.HIGH)
+         print("backward")
+         x='z'
 
 
-def controlMotor():
-    GPIO.setmode(GPIO.BOARD)
-    GPIO.setup(7, GPIO.OUT)
-    GPIO.setup(11, GPIO.OUT)
+    elif x=='s':
+        print("stop")
+        GPIO.output(in1,GPIO.LOW)
+        GPIO.output(in2,GPIO.LOW)
+        x='z'
 
-    # PWM to control the speed of the DC motors
-    # PWM(channel, frequency)
-    pwm = GPIO.PWM(7,207)
-    pwm2 = GPIO.PWM(11,50)
+    elif x=='f':
+        print("forward")
+        GPIO.output(in1,GPIO.HIGH)
+        GPIO.output(in2,GPIO.LOW)
+        temp1=1
+        x='z'
 
-    # Setting the initial dc level of the duty cycle as 0
-    pwm.start(0)
-    pwm2.start(0)
+    elif x=='b':
+        print("backward")
+        GPIO.output(in1,GPIO.LOW)
+        GPIO.output(in2,GPIO.HIGH)
+        temp1=0
+        x='z'
 
+    elif x=='l':
+        print("low")
+        p.ChangeDutyCycle(25)
+        x='z'
 
-    try:
-        while True:
-            # -- One direction --
-            # Duty cycle increases to speed up the motor
-            for i in range(100):
-                # ChangeDutyCycle(dc) which dc varies from 0 to 100
-                pwm.ChangeDutyCycle(i)
-                time.sleep(0.02)
-            # Duty cycle increases to slow down the motor
-            for i in range(100):
-                pwm.ChangeDutyCycle(100-i)
-                time.sleep(0.02)
+    elif x=='m':
+        print("medium")
+        p.ChangeDutyCycle(50)
+        x='z'
 
-            pwm.ChangeDutyCycle(0)
-            
-            # -- Another direction --
-            for in range(100):
-                pwm2.ChangeDutyCycle(i)
-                time.sleep(0.02)
-            for in range(100):
-                pwm2.ChangeDutyCycle(100-i)
-                time.sleep(0.02)
-            pwm2.ChangeDutyCycle(0)
-
-
-    except(KeyboardInterrupt):
-        pass
-    pwm.stop()
-    GPIO.cleanup()
-
-controlMotor()
+    elif x=='h':
+        print("high")
+        p.ChangeDutyCycle(75)
+        x='z'
+     
+    
+    elif x=='e':
+        GPIO.cleanup()
+        print("GPIO Clean up")
+        break
+    
+    else:
+        print("<<<  wrong data  >>>")
+        print("please enter the defined data to continue.....")
