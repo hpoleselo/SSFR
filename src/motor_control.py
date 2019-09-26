@@ -1,41 +1,39 @@
 import RPi.GPIO as GPIO          
 from time import sleep
 
-# Motor A forward direction control
-in1 = 24
-# Motor A backwards direction control
-in2 = 23
-# PWM Port
-en = 25
-temp1=1
+flag=1
+
+# ---- SETTING UP RASPBERRY PI GPIO PORTS! ----- 
+en = 25     # PWM port
+
+in1 = 24    # Motor A forward direction control
+in2 = 23    # Motor A backwards direction control
 
 # Escolhemos duas GPIOs proximas da do Motor A, aleatorio
-# Motor B forward direction control
-inB1 = 22
-# Motor B backwards direction control
-inB2 = 27
+inB1 = 22   # Motor B forward direction control
+inB2 = 27   # Motor B backwards direction control
 
+# Mode of refering to the ports from Raspberry
 GPIO.setmode(GPIO.BCM)
-# Set the ports to control the motor's direction as output
-GPIO.setup(in1,GPIO.OUT)
-GPIO.setup(in2,GPIO.OUT)
+
+# Motor A, setting the ports to control the direction of the motor
+GPIO.setup(in1,GPIO.OUT)    # Forward
+GPIO.setup(in2,GPIO.OUT)    # Backwards
+
+# Motor B, setting the ports to control the direction of the motor
+GPIO.setup(inB1,GPIO.OUT)   # Forward
+GPIO.setup(inB2,GPIO.OUT)   # Backwards
 
 # PWM is output
 GPIO.setup(en,GPIO.OUT)
 
-# By default the motor should not run
+# By default none of the motors should run
 GPIO.output(in1,GPIO.LOW)
 GPIO.output(in2,GPIO.LOW)
-
-# Setting MotorB's ports
-GPIO.setup(inB1,GPIO.OUT)
-GPIO.setup(inB2,GPIO.OUT)
-
-# By default the motor should not run
 GPIO.output(inB1,GPIO.LOW)
 GPIO.output(inB2,GPIO.LOW)
 
-# PWM on port 25 wich 1000Hz of frequency
+# PWM on port 25 with 1000Hz of frequency
 pwm = GPIO.PWM(en,1000)
 
 # Starts PWM with 25%
@@ -50,8 +48,8 @@ while(1):
     x = raw_input()
     
     if x=='r':
-        print("Running motor A")
-        if (temp1==1):
+        print("Running Motor A")
+        if (flag==1):
             # Motor goes forward
             GPIO.output(in1,GPIO.HIGH)
             # We must set then the other direction to low
@@ -66,8 +64,8 @@ while(1):
 
     # Adicionei isso pro segundo motor
     elif x=='r2':
-        print("Running MotorB")
-        if (temp1==1):
+        print("Running Motor B")
+        if (flag==1):
             # Motor goes forward
             GPIO.output(inB1,GPIO.HIGH)
             # We must set then the other direction to low
@@ -95,7 +93,7 @@ while(1):
         # teste
         GPIO.output(inB1,GPIO.HIGH)
         GPIO.output(inB2,GPIO.LOW)
-        temp1=1
+        flag=1
         x='z'
 
     elif x=='b':
@@ -105,7 +103,7 @@ while(1):
         # teste
         GPIO.output(inB1,GPIO.LOW)
         GPIO.output(inB2,GPIO.HIGH)
-        temp1=0
+        flag=0
         x='z'
 
     elif x=='l':
