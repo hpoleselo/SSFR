@@ -5,11 +5,12 @@ flag=1
 
 # ---- SETTING UP RASPBERRY PI GPIO PORTS! ----- 
 en = 25     # PWM port
+enb = 17    # PWM2 port
 
 in1 = 24    # Motor A forward direction control
 in2 = 23    # Motor A backwards direction control
 
-# Escolhemos duas GPIOs proximas da do Motor A, aleatorio
+# Escolhemos duas GPIOs proximas da do Motor A
 inB1 = 22   # Motor B forward direction control
 inB2 = 27   # Motor B backwards direction control
 
@@ -26,6 +27,7 @@ GPIO.setup(inB2,GPIO.OUT)   # Backwards
 
 # PWM is output
 GPIO.setup(en,GPIO.OUT)
+GPIO.setup(enb,GPIO.OUT)
 
 # By default none of the motors should run
 GPIO.output(in1,GPIO.LOW)
@@ -35,9 +37,11 @@ GPIO.output(inB2,GPIO.LOW)
 
 # PWM on port 25 with 1000Hz of frequency
 pwm = GPIO.PWM(en,1000)
+pwm2 = GPIO.PWM(enb,1000)
 
 # Starts PWM with 25%
 pwm.start(25)
+pwm2.start(25)
 print("\n")
 print("The default speed & direction of motor is LOW & Forward.....")
 print("r-run s-stop f-forward b-backward l-low m-medium h-high e-exit")
@@ -88,8 +92,8 @@ while(1):
 
     elif x=='f':
         print("forward")
-        GPIO.output(in1,GPIO.HIGH)
-        GPIO.output(in2,GPIO.LOW)
+        GPIO.output(in1,GPIO.LOW)
+        GPIO.output(in2,GPIO.HIGH)
         # teste
         GPIO.output(inB1,GPIO.HIGH)
         GPIO.output(inB2,GPIO.LOW)
@@ -98,27 +102,24 @@ while(1):
 
     elif x=='b':
         print("backward")
-        GPIO.output(in1,GPIO.LOW)
-        GPIO.output(in2,GPIO.HIGH)
+        GPIO.output(in1,GPIO.HIGH)
+        GPIO.output(in2,GPIO.LOW)
         # teste
         GPIO.output(inB1,GPIO.LOW)
         GPIO.output(inB2,GPIO.HIGH)
         flag=0
         x='z'
 
-    elif x=='l':
-        print("low")
-        pwm.ChangeDutyCycle(25)
-        x='z'
-
     elif x=='m':
         print("medium")
         pwm.ChangeDutyCycle(50)
+        pwm2.ChangeDutyCycle(50)
         x='z'
 
     elif x=='h':
         print("high")
         pwm.ChangeDutyCycle(75)
+        pwm2.ChangeDutyCycle(75)
         x='z'
      
     
