@@ -1,43 +1,43 @@
-    //Programa: Sensor de velocidade Arduino LM393
-    //Autor: Arduino e Cia
-    //Pino ligado ao pino D0 do sensor
-    int pino_D0 = 2;
+    // Encoder LM393 program
+    int D0IN = 2;
     int rpm;
-    volatile byte pulsos;
+    volatile byte pulses;
     unsigned long timeold;
-    //Altere o numero abaixo de acordo com o seu disco encoder
-    unsigned int pulsos_por_volta = 20;
-    void contador()
+    // How many holes one complete rotation in our encoder has
+    unsigned int pulsesPerRound = 20;
+    void counter()
     {
-      //Incrementa contador
-      pulsos++;
+      // Everytime we detect a hole it counts as one pulse
+      pulses++;
     }
     void setup()
     {
       Serial.begin(9600);
-      //Pino do sensor como entrada
-      pinMode(pino_D0, INPUT);
+      // The pin has be our input since we're reading the pulses from the sensor
+      pinMode(D0IN, INPUT);
       //Interrupcao 0 - pino digital 2
-      //Aciona o contador a cada pulso
-      attachInterrupt(0, contador, FALLING);
-      pulsos = 0;
+      // Everytime the interrupt is triggered we call the counter
+      attachInterrupt(0, counter, FALLING);
+      pulses = 0;
       rpm = 0;
       timeold = 0;
     }
     void loop()
     {
-      //Atualiza contador a cada segundo
+      // ACHO QUE DEVEMOS DIIMINUIR PRA SER A CADA MILISEGUNDO MESMO E IR SALVANDO (DIMINUIR PRA 10 OU 1)
+      // Updates the counter each second
       if (millis() - timeold >= 1000)
       {
         //Desabilita interrupcao durante o calculo
         detachInterrupt(0);
-        rpm = (60 * 1000 / pulsos_por_volta ) / (millis() - timeold) * pulsos;
+        // TALVEZ MUDAR A FORMULA
+        rpm = (60 * 1000 / pulsesPerRound ) / (millis() - timeold) * pulses;
         timeold = millis();
-        pulsos = 0;
-        //Mostra o valor de RPM no serial monitor
+        pulses = 0;
+        // Shows the angular velocity in the serial monitor
         Serial.print("RPM = ");
         Serial.println(rpm, DEC);
         //Habilita interrupcao
-        attachInterrupt(0, contador, FALLING);
+        attachInterrupt(0, counter  , FALLING);
       }
     }
