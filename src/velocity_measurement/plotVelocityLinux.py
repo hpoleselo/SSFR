@@ -6,64 +6,62 @@ Modified example originanlly taken from https://www.instructables.com/id/Using-a
 import serial
 import matplotlib.pyplot as plt
 import numpy as np
-import win32com.client
-
-connected = False
-
-#finds COM port that the Arduino is on (assumes only one Arduino is connected)
-# precisamos mudar pra algo
-wmi = win32com.client.GetObject("winmgmts:")
-for port in wmi.InstancesOf("Win32_SerialPort"):
-    #print port.Name #port.DeviceID, port.Name
-    if "Arduino" in port.Name:
-        comPort = port.DeviceID
-        print comPort, "is Arduino"
-
-ser = serial.Serial(comPort, 9600) #sets up serial connection (make sure baud rate is correct - matches Arduino)
-
-while not connected:
-    serin = ser.read()
-    connected = True
 
 
-plt.ion()                    #sets plot to animation mode
+class MeasurementPlotter(object):
+    def __init__(self):
+        self.connected = False
+        # Arduino is set always in linux to /dev/ttyUSB0
+        self.ser = serial.Serial('/dev/ttyUSB0', 9600) #sets up serial connection (make sure baud rate is correct - matches Arduino)
+        print("Using port: %s") %self.ser.name
+        self.checkConnectivity()
 
-# How many points we want to retrieve from the readings
-length = 500
+    def checkConnectivity(self):
+        while not self.connected:
+            x = self.ser.read()          # read one byte
+            print("Reading one byte: %s") %x
+            self.connected = True
+            self.graphSetup()
 
-# Creating the variable before we store the values to be read
-vel = [0]*length
+    def graphSetup(self):
+        plt.ion()                    #sets plot to animation mode
 
-# Sets up future lines to be modified
-# CHECAR COMO PLOTAR O TEMPO
-#xline = plt.plot(t)
-yline, = plt.plot(vel)
+        # How many points we want to retrieve from the readings
+        length = 500
 
-plt.ylim(400,700)   # Sets the y axis limits  
+        # Creating the variable before we store the values to be read
+        vel = [0]*length
 
-# This will parse through length and read the serial values
-for i in range(length):
-    data = ser.readline()    # Reads until it gets a carriage return. MAKE SURE THERE IS A CARRIAGE RETURN OR IT READS FOREVER
-    separate = data.split()      # Splits string into a list at the tabs
-    #print separate
-   
-    x.append(int(separate[0]))   #add new value as int to current list
-  
-    del x[0]
-    del y[0]
-    del z[0]
-   
-    xline.set_xdata(np.arange(len(x))) #sets xdata to new list length
-   
-    xline.set_ydata(x)                 #sets ydata to new list
- 
-    plt.pause(0.001)                   #in seconds
-    plt.draw()                         #draws new plot
+        # Sets up future lines to be modified
+        # CHECAR COMO PLOTAR O TEMPO
+        #xline = plt.plot(t)
+        yline, = plt.plot(vel)
 
+        plt.ylim(400,700)   # Sets the y axis limits
+        # Closes serial connection (very important to do this! if you have an error partway through the code, type this into the cmd line to close the connection)  
+        self.ser.close()
 
-rows = zip(vel, t)                  #combines lists together
+MeasurementPlotter()
 
-row_arr = np.array(rows)               #creates array from list
-np.savetxt("C:\\Users\\mel\\Documents\\Instructables\\test_radio2.txt", row_arr) #save data in file (load w/np.loadtxt())
+def readSerialValues(self):
+    # This will parse through length and read the serial values
+    for i in range(length):
+        data = self.ser.readline()    # Reads until it gets a carriage return. MAKE SURE THERE IS A CARRIAGE RETURN OR IT READS FOREVER
+        separate = data.split()      # Splits string into a list at the tabs
+        #print separate
+    
+        vel.append(int(separate[0]))   #add new value as int to current list
+    
+        del vel[0]
+    
+        #xline.set_xdata(np.arange(len(x))) #sets xdata to new list length
+        yline.set_ydata(np.arange(len(vel)))
+    
+        plt.pause(0.001)                   #in seconds
+        plt.draw()                         #draws new plot
 
-ser.close() #closes serial connection (very important to do this! if you have an error partway through the code, type this into the cmd line to close the connection)
+def saveData(self):
+    rows = zip(vel, t)                  #combines lists together
+
+    row_arr = np.array(rows)               #creates array from list
+    np.savetxt("C:\\Users\\mel\\Documents\\Instructables\\test_radio2.txt", row_arr) #save data in file (load w/np.loadtxt())
