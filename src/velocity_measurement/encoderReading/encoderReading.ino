@@ -7,7 +7,7 @@
     unsigned int pulsesPerRound = 20;
     void counter()
     {
-      // Everytime we detect a hole it counts as one pulse
+      // Everytime we detect a hole it counts as one pulse, pulses = pulses + 1
       pulses++;
     }
     void setup()
@@ -16,7 +16,7 @@
       // The pin has be our input since we're reading the pulses from the sensor
       pinMode(D0IN, INPUT);
       //Interrupcao 0 - pino digital 2
-      // Everytime the interrupt is triggered we call the counter
+      // Everytime the interrupt is triggered (borda de descida) we call the counter
       attachInterrupt(0, counter, FALLING);
       pulses = 0;
       rpm = 0;
@@ -26,6 +26,7 @@
     {
       // ACHO QUE DEVEMOS DIIMINUIR PRA SER A CADA MILISEGUNDO MESMO E IR SALVANDO (DIMINUIR PRA 10 OU 1)
       // Updates the counter each second
+      // millis() returns the number of milliseconds passed since the Arduino board began running the current program
       if (millis() - timeold >= 1000)
       {
         //Desabilita interrupcao durante o calculo
