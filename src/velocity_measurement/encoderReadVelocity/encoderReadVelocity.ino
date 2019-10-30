@@ -6,7 +6,7 @@
     unsigned long actual_time;
 
     // filter variables
-    int filter_samples = 5;
+    int filter_samples = 10;
     int filter_counter;
     float new_rpm;
     float average;
@@ -43,22 +43,25 @@
     void loop()
     {
       // millis() returns the number of milliseconds passed since the Arduino board began running the current program
-      if (millis() - timeold >= 1000)
+      if (millis() - timeold >= 100)
       {
         //Desabilita interrupcao durante o calculo
         detachInterrupt(0);
         // pulses eh sempre 1, serve como uma flag pra indicar que ta passando pelo buraco
         rpm = ((60 * 1000 / pulsesPerRound ) / (millis() - timeold)) * pulses;
+        //Serial.print("RPM Puro: ");
+        //Serial.println(rpm);
+        
         // filtro media movel
         new_rpm = rpm + new_rpm;
         filter_counter++;
         if (filter_counter == filter_samples) {
-            Serial.print("Dentro do if New RPM:");
-            Serial.println(new_rpm);
-            average = new_rpm/5.0;
+            //Serial.print("RPM Somado parcial:");
+            //Serial.println(new_rpm);
+            average = new_rpm/10;
             // adicionar atraso de 5 amostras, pegar tempo aqui
-            Serial.print("RPM Filtrado:");
-            Serial.println(new_rpm, DEC);
+            //Serial.print("RPM Filtrado:");
+            Serial.println(average, DEC);
             filter_counter = 0;
             new_rpm = 0;
         }        
@@ -67,9 +70,6 @@
         actual_time = millis();
         pulses = 0;
         
-        // Shows the angular velocity in the serial monitor
-        Serial.print("New RPM dps dos milli:");
-        Serial.println(new_rpm);
         
         //Serial.print("RPM = ");
         //Serial.println(rpm, DEC);
