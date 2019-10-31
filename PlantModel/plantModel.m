@@ -1,8 +1,9 @@
+% Import t vector from time from the readings in order to reconstruct 
 % The rotation matrix will always be constant in our application
 % Since the global frame doesn't matter
 theta = pi/2;
 n = 4;
-
+omega = [];
 Rot_matrix_inv = [cos(theta) -sin(theta) 0; sin(theta) cos(theta) 0; 0 0 1];
 r = 1; % wheel's diameter in meters
 %phi1 = 0.9; % velocity read from sensor from wheel 1
@@ -17,15 +18,16 @@ comp1 = (r*phi1/2) + (r*phi2/2);
 comp2 = [0 0 0 0];
 comp3 = (r*phi1/2*l) - (r*phi2/2*l);
 
-
-%display(comp1);
-%display(comp2);
-%display(comp3);
-
 for i = 1:n
     % Takes each component from the vector and does the matrix mult.
     vctr = [comp1(i) comp2(i) comp3(i)];
     vctr = vctr.';  % transpose
     output = Rot_matrix_inv*vctr;
-    display(output);
+    % extract just the values from omega (robot's velocity)
+    omega = [omega output(3)];
 end
+
+display(omega);
+
+% Reconstruct system response w/ 3.5V step
+%plot(omega,t)
