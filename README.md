@@ -1,7 +1,7 @@
-# Follower Robot
+# Stationary Spinning Follower Robot
 A robot that uses fiducial markers (ArUco) to obtain the relative position to the marker and adjusts its position using PID control to follow the moving marker.
 
-![setup](https://user-images.githubusercontent.com/24254286/67129582-741e9480-f1d5-11e9-8377-17f15a057203.jpg)
+![setup](https://user-images.githubusercontent.com/24254286/68078356-28faa900-fdb3-11e9-94ae-d9308d47922d.jpg)
 
 ## Installation
 Get the Raspberry Pi Ubuntu Mate Installation for your Rpi:
@@ -15,6 +15,7 @@ Install git:
 Install pip:
 
 ``` $ wget https://bootstrap.pypa.io/get-pip.py ```
+
 ``` $ sudo python2.7 get-pip.py ```
 
 Install OpenCV with Python in the Rpi:
@@ -26,6 +27,8 @@ Clone the repository to anywhere:
 ``` $ git clone https://github.com/hpoleselo/SSFR.git ```
 
 ## Usage
+
+If you want to check model retrieving, check the folder ``` /PlantModel ``` with MATLAB.
 
 ## Authors
 
