@@ -1,8 +1,6 @@
 import RPi.GPIO as GPIO          
 from time import sleep
 
-flag=1
-
 # ---- SETTING UP RASPBERRY PI GPIO PORTS! ----- 
 en = 25     # PWM port
 enb = 17    # PWM2 port
@@ -35,102 +33,50 @@ GPIO.output(in2,GPIO.LOW)
 GPIO.output(inB1,GPIO.LOW)
 GPIO.output(inB2,GPIO.LOW)
 
-# PWM on port 25 with 1000Hz of frequency
+# PWM on port 25 and 17 with 1000Hz of frequency
 pwm = GPIO.PWM(en,1000)
 pwm2 = GPIO.PWM(enb,1000)
 
-# Starts PWM with 25%
+# On our experiment we will be working around 60% of the PWM, i.e 4.5V applied to the motors
 pwm.start(60)
 pwm2.start(60)
-print("\n")
-print("The default speed & direction of motor is LOW & Forward.....")
-print("r-run s-stop f-forward b-backward h-high e-exit")
+print("Commands: ah-CCW, s-stop, f-CCW, ho-CW, e-exit")
 print("\n")    
 
 # Infinite loop
 while(1):
-    x = raw_input()
+    userInput = raw_input()
     
-    if x=='r':
-        print("Running Motor A")
-        if (flag==1):
-            # Motor A 
-            GPIO.output(in1,GPIO.HIGH)
-            GPIO.output(in2,GPIO.LOW)
-            # Motor B
-            GPIO.output(inB1,GPIO.HIGH)
-            GPIO.output(inB2,GPIO.LOW)
-            print("forward")
-            x='z'
-        else:
-            # Motor A
-            GPIO.output(in1,GPIO.LOW)
-            GPIO.output(in2,GPIO.HIGH)
-            # Motor B
-            GPIO.output(inB1,GPIO.LOW)
-            GPIO.output(inB2,GPIO.HIGH)
-            print("backward")
-            x='z'
-
-    elif x=='o1':
-        print("rodar 2 rodas por 6s e parar")
-        GPIO.output(in1,GPIO.LOW)
-        GPIO.output(in2,GPIO.LOW)
-        GPIO.output(inB1,GPIO.LOW)
-        GPIO.output(inB2,GPIO.LOW)
-	time.sleep(5)
-	# Motor A 
+    if userInput =='ah':
+        print("CCW")
+        # Motor A 
         GPIO.output(in1,GPIO.HIGH)
         GPIO.output(in2,GPIO.LOW)
         # Motor B
         GPIO.output(inB1,GPIO.HIGH)
         GPIO.output(inB2,GPIO.LOW)
- 	time.sleep(5)
-	GPIO.output(in1,GPIO.LOW)
-        GPIO.output(in2,GPIO.LOW)
+        print("forward")
+        userInput ='z'
+
+    elif userInput =='ho':
+        print("Robot rotating CW")
+        GPIO.output(in1,GPIO.LOW)
+        GPIO.output(in2,GPIO.HIGH)
+        # Motor B
         GPIO.output(inB1,GPIO.LOW)
-        GPIO.output(inB2,GPIO.LOW)
-        
-        x='z'
+        GPIO.output(inB2,GPIO.HIGH)
+        flag=0
+        userInput ='z'        
 
-
-    elif x=='s':
+    elif userInput =='s':
         print("stop")
         GPIO.output(in1,GPIO.LOW)
         GPIO.output(in2,GPIO.LOW)
         GPIO.output(inB1,GPIO.LOW)
         GPIO.output(inB2,GPIO.LOW)
-        x='z'
-
-    elif x=='f':
-        print("forward")
-        GPIO.output(in1,GPIO.LOW)
-        GPIO.output(in2,GPIO.HIGH)
-        # Motor B
-        GPIO.output(inB1,GPIO.HIGH)
-        GPIO.output(inB2,GPIO.LOW)
-        flag=1
-        x='z'
-
-    elif x=='b':
-        print("backward")
-        GPIO.output(in1,GPIO.HIGH)
-        GPIO.output(in2,GPIO.LOW)
-        # Motor B
-        GPIO.output(inB1,GPIO.LOW)
-        GPIO.output(inB2,GPIO.HIGH)
-        flag=0
-        x='z'
-
-
-    elif x=='h':
-        print("high")
-        pwm.ChangeDutyCycle(80)
-        pwm2.ChangeDutyCycle(80)
-        x='z'
-     
+        userInput ='z'
     
-    elif x=='e':
+    elif userInput =='e':
         GPIO.cleanup()
         print("GPIO Clean up")
         break
