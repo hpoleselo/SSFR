@@ -1,9 +1,9 @@
-function [time, phi1_filtered1] = readAndFilterData()
+function [time, phi1_filtered] = readAndFilterData()
     % Order of the moving averaging filter
-    n = 10;
+    n = 5;
 
     % Read CSV data
-    T_matrix = readtable('measurements1.csv');
+    T_matrix = readtable('medicaoJesse4Melhorzinha.csv');
 
     % Separate the data in vectors and tranposes
     time = table2array(T_matrix(:,1)).';   % gets the time vector
@@ -15,12 +15,13 @@ function [time, phi1_filtered1] = readAndFilterData()
     end
 
     %hold on
-    %plot(time, phi1_filtered,'r');
+%     plot(time, phi1_filtered,'r');
+%     grid on
 
-
-    for i = n:length(phi1_filtered)
-       phi1_filtered1(i) = (phi1_filtered(i)+phi1_filtered(i-(n-4))+phi1_filtered(i-(n-3))+phi1_filtered(i-(n-2))+phi1_filtered(i-(n-1)))/n; 
-    end
+    
+    %for i = n:length(phi1_filtered)
+    %   phi1_filtered1(i) = (phi1_filtered(i)+phi1_filtered(i-(n-4))+phi1_filtered(i-(n-3))+phi1_filtered(i-(n-2))+phi1_filtered(i-(n-1)))/n; 
+    %end
 %     hold on
 %     plot(time,phi1_filtered1,'k');
 end
