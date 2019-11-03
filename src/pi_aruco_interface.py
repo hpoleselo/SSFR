@@ -77,7 +77,9 @@ class ArucoInterface(object):
                 aruco.drawDetectedMarkers(frame, corners)
                 ###### Draw ID on the screen #####
                 cv2.putText(frame, "Id: " + str(ids), (0,64), font, 1, (0,255,0),2,cv2.LINE_AA)
-                print(tvec)
+                
+                # Testar com o print, se for so o x usar return
+                print(tvec[0][0][0])
                 # Only get the x position of the marker
                 #return tvec[0][0][0]
 
@@ -89,7 +91,7 @@ class ArucoInterface(object):
         #cap.release()
         #cv2.destroyAllWindows()
 
-
+"""
 def main():
     arucao = ArucoInterface()
     arucao.track_aruco()
@@ -103,3 +105,4 @@ if __name__ == '__main__':
             sys.exit(0)
         except SystemExit:
             os._exit(0)
+"""
