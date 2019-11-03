@@ -11,6 +11,7 @@ class ArucoInterface(object):
     def __init__(self):
         # Size of the ArUco marker in meters
         self.marker_size = 0.05
+	self.x = 0
 
     def checkCamera(self):
         """ Checks if the camera is available """
@@ -19,14 +20,17 @@ class ArucoInterface(object):
             if camera == "/dev/video2":
                 cameraIndex = 2
                 cameraFound = True
+		print("[INFO]: Using index 2 for the camera.")
                 return cameraIndex, cameraFound
             elif camera == "/dev/video1":
                 cameraIndex = 1
                 cameraFound = True
+		print("[INFO]: Using index 1 for the camera.")
                 return cameraIndex, cameraFound
             elif camera == "/dev/video0":
                 cameraIndex = 0
                 cameraFound = True
+		print("[INFO]: Using index 0 for the camera")
                 return cameraIndex, cameraFound
             else:
                 print("[ERROR]: No camera found.")
@@ -36,28 +40,31 @@ class ArucoInterface(object):
 
     def extract_calibration(self):
         """ Gets the the camera and distortion matrix from the calibrate_camera method. By reading the yaml file. """
-        cv_file = cv2.FileStorage("calib_images/calibration.yaml", cv2.FILE_STORAGE_READ)
+        #TODO add function to check if the folder exists because opencv points to other error rather than saying it doesnt exist
+	cv_file = cv2.FileStorage("calib_images/calibration.yaml", cv2.FILE_STORAGE_READ)
         camera_matrix = cv_file.getNode("camera_matrix").mat()
         dist_matrix = cv_file.getNode("dist_coeff").mat()
         print("[INFO]: Extracted camera parameters.")
         cv_file.release()
         return camera_matrix, dist_matrix
 
+    def blockPrint(self):
+	sys.stdout = open(os.devnull, 'w')
+
     def track_aruco(self):
         """ Tracks the ArUco Marker in real time. """
         marker_size = self.marker_size
 
         # Getting the calibrated parameters
-        camera_matrix, dist_matrix = self.extract_calibration()              
+        camera_matrix, dist_matrix = self.extract_calibration()
         cameraIndex, foundCamera = self.checkCamera()
-
         cap = cv2.VideoCapture(cameraIndex)
-        
+
         while (True and foundCamera):
             # Getting a frame from video stream
             ret, frame = cap.read()
-
             # Since we are getting BGR frames we have to convert them
+	    self.blockPrint()
             gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
             aruco_dict = aruco.Dictionary_get(aruco.DICT_6X6_100)
             parameters = aruco.DetectorParameters_create()
@@ -68,18 +75,18 @@ class ArucoInterface(object):
 
             #  Just enters this condition if any id is found on the camera frame
             if np.all(ids is not None):
-                rvec, tvec, _ = aruco.estimatePoseSingleMarkers(corners[0], marker_size, camera_matrix, dist_matrix)
+                rvec, tvec = aruco.estimatePoseSingleMarkers(corners[0], marker_size, camera_matrix, dist_matrix)
                 #(rvec-tvec).any() # get rid of that nasty numpy value array error
                 #print 'Rotation Vector: ', rvec
                 #print 'Translation Vector:', tvec
-                aruco.drawAxis(frame, camera_matrix, dist_matrix, rvec[0], tvec[0], 0.1)
+		#aruco.drawAxis(frame, camera_matrix, dist_matrix, rvec[0], tvec[0], 0.1)
                 # Drawing a square on the identified marker
-                aruco.drawDetectedMarkers(frame, corners)
+                #aruco.drawDetectedMarkers(frame, corners)
                 ###### Draw ID on the screen #####
-                cv2.putText(frame, "Id: " + str(ids), (0,64), font, 1, (0,255,0),2,cv2.LINE_AA)
-                
+                #cv2.putText(frame, "Id: " + str(ids), (0,64), font, 1, (0,255,0),2,cv2.LINE_AA) 
                 # Testar com o print, se for so o x usar return
-                print(tvec[0][0][0])
+                self.x = tvec[0][0][0]
+		print(self.x)
                 # Only get the x position of the marker
                 #return tvec[0][0][0]
 
@@ -106,3 +113,5 @@ if __name__ == '__main__':
         except SystemExit:
             os._exit(0)
 """
+test = ArucoInterface()
+test.track_aruco()

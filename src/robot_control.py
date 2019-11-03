@@ -1,6 +1,6 @@
 import RPi.GPIO as GPIO
 import sys
-import pi_aruco_interface          
+import pi_aruco_interface
 from time import sleep
 
 class SSFRController(object):
@@ -20,22 +20,22 @@ class SSFRController(object):
         GPIO.setmode(GPIO.BCM)
 
         # Motor A, setting the ports to control the direction of the motor
-        GPIO.setup(in1,GPIO.OUT)    # Forward
-        GPIO.setup(in2,GPIO.OUT)    # Backwards
+        GPIO.setup(self.in1,GPIO.OUT)    # Forward
+        GPIO.setup(self.in2,GPIO.OUT)    # Backwards
 
         # Motor B, setting the ports to control the direction of the motor
-        GPIO.setup(inB1,GPIO.OUT)   # Forward
-        GPIO.setup(inB2,GPIO.OUT)   # Backwards
+        GPIO.setup(self.inB1,GPIO.OUT)   # Forward
+        GPIO.setup(self.inB2,GPIO.OUT)   # Backwards
 
         # PWM is output
         GPIO.setup(en,GPIO.OUT)
         GPIO.setup(enb,GPIO.OUT)
 
         # By default none of the motors should run
-        GPIO.output(in1,GPIO.LOW)
-        GPIO.output(in2,GPIO.LOW)
-        GPIO.output(inB1,GPIO.LOW)
-        GPIO.output(inB2,GPIO.LOW)
+        GPIO.output(self.in1,GPIO.LOW)
+        GPIO.output(self.in2,GPIO.LOW)
+        GPIO.output(self.inB1,GPIO.LOW)
+        GPIO.output(self.inB2,GPIO.LOW)
 
         # PWM on port 25 and 17 with 1000Hz of frequency
         pwm = GPIO.PWM(en,1000)
@@ -75,7 +75,7 @@ class SSFRController(object):
 
     def cleanPorts(self):
         GPIO.cleanup()
-        print("GPIO Clean up")
+        print("[INFO]: GPIO Clean up")
         sys.exit()
 
     def testMotors(self):
@@ -88,26 +88,33 @@ class SSFRController(object):
         self.cleanPorts()
 
     def readMarkerX(self):
-        self.aruco_interface.track_aruco()
+	try:
+        	self.aruco_interface.track_aruco()
+		x = self.aruco_interface.x
+		print(x)
         # x_value = self.aruco_interface.track_aruco()
         #return x
+	except(KeyboardInterrupt):
+		sys.exit()
 
     def positionControl(self):
-        while True:
-            x = self.readMarkerX()
-            if x < 0:
-                self.rotateCounterClockWise()
-            elif x > 0:
-                self.rotateClockwise()
+        try:
+            while True:
+                x = self.readMarkerX()
+                if x < 0:
+                    self.rotateCounterClockWise()
+                elif x > 0:
+                    self.rotateClockwise()
+        except(KeyboardInterrupt):
+            self.stopMotors()
+            self.cleanPorts()
+            sys.exit()
 
         
-
-
-
     def firstRun(self):
-        self.testMotors()
+        self.readMarkerX()
     
         
-
+SSFRController()
 
 
