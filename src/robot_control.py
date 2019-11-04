@@ -88,14 +88,14 @@ class SSFRController(object):
         self.cleanPorts()
 
     def readMarkerX(self):
-	try:
-        	self.aruco_interface.track_aruco()
-		x = self.aruco_interface.x
-		print(x)
-        # x_value = self.aruco_interface.track_aruco()
-        #return x
-	except(KeyboardInterrupt):
-		sys.exit()
+        try:
+            for i in self.aruco_interface.track_aruco():
+                x = i
+                print(x)
+            # x_value = self.aruco_interface.track_aruco()  
+            #return x
+        except(KeyboardInterrupt):
+            sys.exit()
 
     def positionControl(self):
         try:
