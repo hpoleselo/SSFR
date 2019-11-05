@@ -2,6 +2,8 @@ import RPi.GPIO as GPIO
 import sys
 import rospy
 import pidcontroller
+import pi_aruco_interface
+import threading
 from time import sleep
 from geometry_msgs.msg import Point
 
@@ -48,10 +50,13 @@ class SSFR(object):
         pwm2.start(30)
 
         # Retrieve the messages over ROS from the position
-        rospy.init_node("aruco_receiver")
+        #rospy.init_node("aruco_receiver")
 
         self.pid = pidcontroller.PID(200,300,0)
-        self.firstRun()
+        self.ArucoInstance = pi_aruco_interface.ArucoInterface()
+        self.t = threading.Thread(target=self.ArucoInstance.track_aruco(),args=("Thread sendo executada",))
+
+        self.main()
 
     def rotateClockwise(self):
         print("[INFO]: Rotating CW")
@@ -95,29 +100,31 @@ class SSFR(object):
         sleep(1)
         self.cleanPorts()
 
+    def pegarPosX(self):
+        """ Inicia a thread , i.e a obtencao da posicao"""
+        self.t.start()
+        self.ArucoInstance.x
+
     def followMarker(self):
         """ Pre test function to check if the PID will work. """
+        self.pegarPosX()
         while True:
             actual_position = 0
-            new_position = x
+            new_position = self.ArucoInstance.x
             erro = abs(new_position)
             if erro > 0.01:
                 if new_position < 0:
                     self.rotateCounterClockWise()
-                    while erro > 0.01
+                    while erro > 0.01:
                         new_position = x
                         erro = abs(new_position)
                     self.stopMotors
                 if new_position > 0:
                     self.rotateClockwise()
-                    while erro > 0.01
+                    while erro > 0.01:
                         new_position = x
                         erro = abs(new_position)
                     self.stopMotors
-
-    def readMarkerX(self):
-        """ THREAD: Reads the position from the marker """
-        rospy.Subscriber("marker_position", Point, self.positionCallback)
 
     def positionControl(self, x):
         targetPosition = 0
@@ -136,8 +143,9 @@ class SSFR(object):
             self.cleanPorts()
             sys.exit()
         
-    def firstRun(self):
-        self.testMotors()
+    def main(self):
+        """ Runs the wished method. """
+        self.followMarker()
         
 SSFR()
 
