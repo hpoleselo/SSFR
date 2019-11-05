@@ -1,9 +1,11 @@
 import RPi.GPIO as GPIO
 import sys
-import pi_aruco_interface
+import rospy
+import pidcontroller
 from time import sleep
+from geometry_msgs.msg import Point
 
-class SSFRController(object):
+class SSFR(object):
     def __init__(self):
         """ This init function sets the Raspberry ports to control the H-Bridge and initializes the ArUco interface """
         en = 25     # PWM port
@@ -42,11 +44,13 @@ class SSFRController(object):
         pwm2 = GPIO.PWM(enb,1000)
 
         # On our experiment we will be working around 60% of the PWM, i.e 4.5V applied to the motors
-        pwm.start(60)
-        pwm2.start(60)
+        pwm.start(30)
+        pwm2.start(30)
 
-        self.aruco_interface = pi_aruco_interface.ArucoInterface()
+        # Retrieve the messages over ROS from the position
+        rospy.init_node("aruco_receiver")
 
+        self.pid = pidcontroller.PID(200,300,0)
         self.firstRun()
 
     def rotateClockwise(self):
@@ -78,6 +82,10 @@ class SSFRController(object):
         print("[INFO]: GPIO Clean up")
         sys.exit()
 
+    def positionCallback(self, position):
+        """ Retrieves the ArUco position over ROS """
+        return position.x, position.z
+
     def testMotors(self):
         self.rotateClockwise()
         sleep(5)
@@ -87,34 +95,50 @@ class SSFRController(object):
         sleep(1)
         self.cleanPorts()
 
-    def readMarkerX(self):
-        try:
-            for i in self.aruco_interface.track_aruco():
-                x = i
-                print(x)
-            # x_value = self.aruco_interface.track_aruco()  
-            #return x
-        except(KeyboardInterrupt):
-            sys.exit()
+    def followMarker(self):
+        """ Pre test function to check if the PID will work. """
+        while True:
+            actual_position = 0
+            new_position = x
+            erro = abs(new_position)
+            if erro > 0.01:
+                if new_position < 0:
+                    self.rotateCounterClockWise()
+                    while erro > 0.01
+                        new_position = x
+                        erro = abs(new_position)
+                    self.stopMotors
+                if new_position > 0:
+                    self.rotateClockwise()
+                    while erro > 0.01
+                        new_position = x
+                        erro = abs(new_position)
+                    self.stopMotors
 
-    def positionControl(self):
+    def readMarkerX(self):
+        """ THREAD: Reads the position from the marker """
+        rospy.Subscriber("marker_position", Point, self.positionCallback)
+
+    def positionControl(self, x):
+        targetPosition = 0
         try:
             while True:
-                x = self.readMarkerX()
-                if x < 0:
+                currentPosition = self.readMarkerX()tele
+                error = targetPosition - currentPosition
+                correction = self.pid.Update(error)
+                if error > 0:
                     self.rotateCounterClockWise()
-                elif x > 0:
+                    pwm(correction)
+                elif error < 0:
                     self.rotateClockwise()
         except(KeyboardInterrupt):
             self.stopMotors()
             self.cleanPorts()
             sys.exit()
-
         
     def firstRun(self):
-        self.readMarkerX()
-    
+        self.testMotors()
         
-SSFRController()
+SSFR()
 
 
