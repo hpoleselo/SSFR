@@ -13,9 +13,8 @@ class ArucoInterface(object):
     def __init__(self):
         # Size of the ArUco marker in meters
         self.marker_size = 0.05
-        #self.useROS()
-        self.use_ros = False
-        self.x = 0
+        rospy.init_node("aruco_position_publisher", disable_signals=True)
+        self.positionPublisher = rospy.Publisher("marker_position", Point, queue_size=1)
 
     def checkCamera(self):
         """ Checks if the camera is available """
@@ -60,85 +59,40 @@ class ArucoInterface(object):
         """ function to shut the error down from the console: corrupt JPEG data: # extraneous bytes before marker 0x## """
         sys.stdout = open(os.devnull, 'w')
 
-    def useROS(self):
-        self.use_ros = True
-        rospy.init_node("aruco_position_publisher")
-        self.positionPublisher = rospy.Publisher("marker_position", Point, queue_size=1)
-
-
     def track_aruco(self):
         """ Tracks the ArUco Marker in real time. """
         marker_size = self.marker_size
-
         # Getting the calibrated parameters
         camera_matrix, dist_matrix = self.extract_calibration()
-        #self.blockPrint()
-        print("Erro dando antes de check")
         cameraIndex, foundCamera = self.checkCamera()
-        #self.blockPrint()
-        print("Erro dando antes de chamar cap")
-        cap = cv2.VideoCapture(cameraIndex)
         try:
+            cap = cv2.VideoCapture(cameraIndex)
             while (True and foundCamera):
-                print("Erro antes de dar read no cap")
                 # Getting a frame from video stream
                 ret, frame = cap.read()
-                if ret is True:
-                    print("Ret is true")
-                    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-                else:
-                    continue
+                gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
                 aruco_dict = aruco.Dictionary_get(aruco.DICT_6X6_100)
                 parameters = aruco.DetectorParameters_create()
 
                 # Lists of ids and the corners belonging to each id
                 corners, ids, rejectedImgPoints = aruco.detectMarkers(gray, aruco_dict, parameters=parameters)
-                #font = cv2.FONT_HERSHEY_SIMPLEX
 
                 #  Just enters this condition if any id is found on the camera frame
                 if np.all(ids is not None):
-                    rvec, tvec = aruco.estimatePoseSingleMarkers(corners[0], marker_size, camera_matrix, dist_matrix)
-                    #(rvec-tvec).any() # get rid of that nasty numpy value array error
+                    _, tvec = aruco.estimatePoseSingleMarkers(corners[0], marker_size, camera_matrix, dist_matrix)
                     #print 'Rotation Vector: ', rvec
-                    #print 'Translation Vector:', tvec
-                    #aruco.drawAxis(frame, camera_matrix, dist_matrix, rvec[0], tvec[0], 0.1)
-                    #aruco.drawDetectedMarkers(frame, corners)
-                    #cv2.putText(frame, "Id: " + str(ids), (0,64), font, 1, (0,255,0),2,cv2.LINE_AA)
-                    self.x = tvec[0][0][0]
-                    if self.use_ros == True:
-                        msgToPublish = Point()
-                        msgToPublish.x = tvec[0][0][0]
-                        msgToPublish.z = tvec[0][0][2]
-                        #self.positionPublisher.publish(msgToPublish)
-                    # If we were not to use ROS:
-                    #print(tvec[0][0][0])
-                    #yield tvec[0][0][0]
-        except:
+                    print 'Translation Vector:', tvec
+                    msgToPublish = Point()
+                    msgToPublish.x = tvec[0][0][0]
+                    msgToPublish.z = tvec[0][0][2]
+                    self.positionPublisher.publish(msgToPublish)
+
+        except(KeyboardInterrupt):
+            print("Interrupt from keyboard, closing caption")
             cap.release()
             sys.exit(0)
 
 
 
-                # Display the resulting frame
-                #cv2.imshow('ArucoDetection', frame)
-                
-            #cap.release()
-            #cv2.destroyAllWindows()
-
-
-
 ai = ArucoInterface()
 ai.track_aruco()
-
-
-"""
-if __name__ == '__main__':
-    try:
-        main()
-    except KeyboardInterrupt:
-        print('[WARN]: Program interrupted')
-        try:
-            sys.exit(0)
-        except SystemExit:
-            os._exit(0)
-"""
