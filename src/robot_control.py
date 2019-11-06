@@ -3,8 +3,9 @@ import sys
 import rospy
 import pidcontroller
 import threading
+import csv
 #import pi_aruco_interface
-from time import sleep
+from time import sleep, time
 from geometry_msgs.msg import Point
 
 class SSFR(object):
@@ -68,7 +69,7 @@ class SSFR(object):
             # The problem with the thread is because the opening of the camera is concurrent
             self.t = threading.Thread(target=self.ArucoInstance.track_aruco,args=("Thread sendo executada",))
 
-        self.followMarker()
+        self.modelIdentification()
 
     def rotateClockwise(self):
         print("[INFO]: Rotating CW")
@@ -119,6 +120,16 @@ class SSFR(object):
         self.x = position.x
         self.z = position.z
 
+    def saveMeasurement(self, n, t, x, z):
+        n = str(n)
+        file = "measurement" + n + ".csv"
+        with open(file, mode='w') as measurement:
+            measurement = csv.writer(measurement, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+            measurement.writerow(['t', 'x', 'z'])
+            for i in range(len(t)):
+                measurement.writerow([t[i],x[i],z[i]])
+
+
     def followMarker(self):
         """ Pre test function to check if the PID will work. """
         #TODO: Testar pra stop os motores e clean no ctrl+c, ver exemplo do pi aruco interface pois este funciona
@@ -166,8 +177,22 @@ class SSFR(object):
             sys.exit()
         
     def modelIdentification(self):
-        self.rotateClockwise
-
+        t = []
+        x = []
+        z = []
+        print("Robot will start spinning in 5s...")
+        sleep(5)
+        self.rotateClockwise()
+        t_end = time() + 1.5
+        while time() < t_end:
+            # a camera tem 30 fps
+            t.append(time())
+            x.append(self.x)
+            z.append(self.z)
+            sleep(0.015)
+        print("Points retrieved:"), len(t)
+        n = 1
+        self.saveMeasurement(n,t,x,z)
         
 def run():
     robot = SSFR()
