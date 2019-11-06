@@ -2,13 +2,13 @@ import RPi.GPIO as GPIO
 import sys
 import rospy
 import pidcontroller
-import pi_aruco_interface
 import threading
+#import pi_aruco_interface
 from time import sleep
 from geometry_msgs.msg import Point
 
 class SSFR(object):
-    def __init__(self):
+    def __init__(self, use_ros=True):
         """ This init function sets the Raspberry ports to control the H-Bridge and initializes the ArUco interface """
         en = 25     # PWM port
         enb = 17    # PWM2 port
@@ -48,15 +48,27 @@ class SSFR(object):
         # On our experiment we will be working around 60% of the PWM, i.e 4.5V applied to the motors
         pwm.start(30)
         pwm2.start(30)
-
-        # Retrieve the messages over ROS from the position
-        #rospy.init_node("aruco_receiver")
+        print("[INFO]: --- Initialized motors from the SSFR ---")
 
         self.pid = pidcontroller.PID(200,300,0)
-        self.ArucoInstance = pi_aruco_interface.ArucoInterface()
-        self.t = threading.Thread(target=self.ArucoInstance.track_aruco(),args=("Thread sendo executada",))
 
-        self.main()
+        # Setting the class variables to be 0 at start and then they will be updated as long the subscriber retrieves them
+        self.x = 0
+        self.z = 0
+
+        if use_ros:
+        # Retrieve the messages over ROS from the position
+            rospy.init_node("aruco_receiver")
+            self.positionSubscriber = rospy.Subscriber("marker_position", Point, self.positionCallback)
+            print("[INFO]: --- Retrieving position from ArUco Marker! ---")
+
+        # [Caso fosse usar Thread] Initializing the Thread
+        if use_ros != True:
+            self.ArucoInstance = pi_aruco_interface.ArucoInterface()
+            # The problem with the thread is because the opening of the camera is concurrent
+            self.t = threading.Thread(target=self.ArucoInstance.track_aruco,args=("Thread sendo executada",))
+
+        self.followMarker()
 
     def rotateClockwise(self):
         print("[INFO]: Rotating CW")
@@ -87,10 +99,6 @@ class SSFR(object):
         print("[INFO]: GPIO Clean up")
         sys.exit()
 
-    def positionCallback(self, position):
-        """ Retrieves the ArUco position over ROS """
-        return position.x, position.z
-
     def testMotors(self):
         self.rotateClockwise()
         sleep(5)
@@ -100,37 +108,51 @@ class SSFR(object):
         sleep(1)
         self.cleanPorts()
 
-    def pegarPosX(self):
-        """ Inicia a thread , i.e a obtencao da posicao"""
+    def pegarPosXCThread(self):
+        """ [HALTED] Inicia a thread , i.e a obtencao da posicao"""
+        self.t.daemon = True
         self.t.start()
-        self.ArucoInstance.x
+        print(self.ArucoInstance.x)
+
+    def positionCallback(self, position):
+        """ Retrieves the ArUco position over ROS """
+        self.x = position.x
+        self.z = position.z
 
     def followMarker(self):
         """ Pre test function to check if the PID will work. """
-        self.pegarPosX()
-        while True:
-            actual_position = 0
-            new_position = self.ArucoInstance.x
-            erro = abs(new_position)
-            if erro > 0.01:
-                if new_position < 0:
-                    self.rotateCounterClockWise()
-                    while erro > 0.01:
-                        new_position = x
-                        erro = abs(new_position)
-                    self.stopMotors
-                if new_position > 0:
+        #TODO: Testar pra stop os motores e clean no ctrl+c, ver exemplo do pi aruco interface pois este funciona
+        try:
+            while True:
+                if self.x < -0.05:
                     self.rotateClockwise()
-                    while erro > 0.01:
-                        new_position = x
-                        erro = abs(new_position)
-                    self.stopMotors
+                elif self.x > 0.05:
+                    self.rotateCounterClockWise()
+                """
+                erro = abs(self.x)
+                if erro > 0.01:
+                    if self.x < -0.05:
+                        self.rotateCounterClockWise()
+                        while erro > 0.01:
+                            new_position = self.x
+                            erro = abs(new_position)
+                        self.stopMotors
+                    if self.x > 0.08:
+                        self.rotateClockwise()
+                        while erro > 0.01:
+                            new_position = self.x
+                            erro = abs(new_position)
+                        self.stopMotors
+                    """
+        except(KeyboardInterrupt):
+            self.stopMotors
+            self.cleanPorts()
 
     def positionControl(self, x):
         targetPosition = 0
         try:
             while True:
-                currentPosition = self.readMarkerX()tele
+                currentPosition = self.readMarkerX()
                 error = targetPosition - currentPosition
                 correction = self.pid.Update(error)
                 if error > 0:
@@ -143,10 +165,15 @@ class SSFR(object):
             self.cleanPorts()
             sys.exit()
         
-    def main(self):
-        """ Runs the wished method. """
-        self.followMarker()
+    def modelIdentification(self):
+        self.rotateClockwise
+
         
-SSFR()
+def run():
+    robot = SSFR()
+    #rospy.spin()
+
+if __name__ == "__main__":
+    run()
 
 
