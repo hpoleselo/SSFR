@@ -8,7 +8,7 @@ import csv
 from time import sleep, time
 from geometry_msgs.msg import Point
 
-class SSFR(object):
+class FollowerRobot(object):
     def __init__(self, use_ros=True):
         """ This init function sets the Raspberry ports to control the H-Bridge and initializes the ArUco interface """
         en = 25     # PWM port
@@ -49,7 +49,7 @@ class SSFR(object):
         # On our experiment we will be working around 60% of the PWM, i.e 4.5V applied to the motors
         pwm.start(30)
         pwm2.start(30)
-        print("[INFO]: --- Initialized motors from the SSFR ---")
+        print("[INFO]: --- Initialized motors from the Robot ---")
 
         self.pid = pidcontroller.PID(200,300,0)
 
@@ -86,6 +86,42 @@ class SSFR(object):
         GPIO.output(self.in2,GPIO.LOW)
         # Motor B
         GPIO.output(self.inB1,GPIO.HIGH)
+        GPIO.output(self.inB2,GPIO.LOW)
+
+    def goForward(self):
+        print("[INFO]: Robot going forward")
+        # Motor A
+        GPIO.output(self.in1,GPIO.LOW)
+        GPIO.output(self.in2,GPIO.HIGH)
+        # Motor B
+        GPIO.output(self.inB1,GPIO.HIGH)
+        GPIO.output(self.inB2,GPIO.LOW)
+
+    def goBackwards(self):
+        print("[INFO]: Robot going backwards")
+        # Motor A
+        GPIO.output(self.in1,GPIO.HIGH)
+        GPIO.output(self.in2,GPIO.LOW)
+        # Motor B
+        GPIO.output(self.inB1,GPIO.LOW)
+        GPIO.output(self.inB2,GPIO.HIGH)
+    #TESTAR
+    def rotateLeftWheelBackwards(self):
+        print("[INFO]: Rotating only the left wheel backwards")
+        # Motor A 
+        GPIO.output(self.in1,GPIO.HIGH)
+        GPIO.output(self.in2,GPIO.LOW)
+        # Motor B
+        GPIO.output(self.inB1,GPIO.LOW)
+        GPIO.output(self.inB2,GPIO.LOW)
+    #TESTAR
+    def rotateLeftWheelForward(self):
+        print("[INFO]: Rotating only the left wheel forward")
+        # Motor A 
+        GPIO.output(self.in1,GPIO.LOW)
+        GPIO.output(self.in2,GPIO.HIGH)
+        # Motor B
+        GPIO.output(self.inB1,GPIO.LOW)
         GPIO.output(self.inB2,GPIO.LOW)
 
     def stopMotors(self):
@@ -128,7 +164,6 @@ class SSFR(object):
             measurement.writerow(['t', 'x', 'z'])
             for i in range(len(t)):
                 measurement.writerow([t[i],x[i],z[i]])
-
 
     def followMarker(self):
         """ Pre test function to check if the PID will work. """
@@ -180,22 +215,25 @@ class SSFR(object):
         t = []
         x = []
         z = []
-        print("Robot will start spinning in 5s...")
-        sleep(5)
-        self.rotateClockwise()
+        print("[INFO]: Spinning the robot in 5s...")
+        self.rotateLeftWheelBackwards()
         t_end = time() + 1.5
         while time() < t_end:
-            # a camera tem 30 fps
+            # a camera tem 30 fps, estimou-se que no max pegaremos 30 amostras de posicao por segundo
+            # entao o delay no sleep eh baseado nisso, 0.025 em um intervalo de 1.5s gera 60 amostras
             t.append(time())
             x.append(self.x)
             z.append(self.z)
-            sleep(0.015)
+            sleep(0.025)
         print("Points retrieved:"), len(t)
+        # Measurement number
         n = 1
         self.saveMeasurement(n,t,x,z)
+        self.stopMotors()
+        self.cleanPorts()
         
 def run():
-    robot = SSFR()
+    robot = FollowerRobot()
     #rospy.spin()
 
 if __name__ == "__main__":
