@@ -47,7 +47,7 @@ class FollowerRobot(object):
         pwm2 = GPIO.PWM(enb,1000)
 
         # On our experiment we will be working around 60% of the PWM, i.e 4.5V applied to the motors
-        pwm.start(30)
+        pwm.start(40)
         pwm2.start(30)
         print("[INFO]: --- Initialized motors from the Robot ---")
 
@@ -69,7 +69,7 @@ class FollowerRobot(object):
             # The problem with the thread is because the opening of the camera is concurrent
             self.t = threading.Thread(target=self.ArucoInstance.track_aruco,args=("Thread sendo executada",))
 
-        self.modelIdentification()
+        self.runTest()
 
     def rotateClockwise(self):
         print("[INFO]: Rotating CW")
@@ -105,7 +105,7 @@ class FollowerRobot(object):
         # Motor B
         GPIO.output(self.inB1,GPIO.LOW)
         GPIO.output(self.inB2,GPIO.HIGH)
-    #TESTAR
+    
     def rotateLeftWheelBackwards(self):
         print("[INFO]: Rotating only the left wheel backwards")
         # Motor A 
@@ -114,7 +114,7 @@ class FollowerRobot(object):
         # Motor B
         GPIO.output(self.inB1,GPIO.LOW)
         GPIO.output(self.inB2,GPIO.LOW)
-    #TESTAR
+
     def rotateLeftWheelForward(self):
         print("[INFO]: Rotating only the left wheel forward")
         # Motor A 
@@ -216,7 +216,7 @@ class FollowerRobot(object):
         x = []
         z = []
         print("[INFO]: Spinning the robot in 5s...")
-        self.rotateLeftWheelBackwards()
+        self.rotateLeftWheelForward()
         t_end = time() + 1.5
         while time() < t_end:
             # a camera tem 30 fps, estimou-se que no max pegaremos 30 amostras de posicao por segundo
@@ -232,9 +232,14 @@ class FollowerRobot(object):
         self.stopMotors()
         self.cleanPorts()
         
+    def runTest(self):
+        self.rotateLeftWheelForward()
+        sleep(5)
+        self.stopMotors()
+        self.cleanPorts()
+
 def run():
     robot = FollowerRobot()
-    #rospy.spin()
 
 if __name__ == "__main__":
     run()
