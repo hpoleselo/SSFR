@@ -47,8 +47,8 @@ class FollowerRobot(object):
         pwm2 = GPIO.PWM(enb,1000)
 
         # On our experiment we will be working around 60% of the PWM, i.e 4.5V applied to the motors
-        pwm.start(40)
-        pwm2.start(30)
+        pwm.start(80)
+        pwm2.start(80)
         print("[INFO]: --- Initialized motors from the Robot ---")
 
         self.pid = pidcontroller.PID(200,300,0)
@@ -69,7 +69,8 @@ class FollowerRobot(object):
             # The problem with the thread is because the opening of the camera is concurrent
             self.t = threading.Thread(target=self.ArucoInstance.track_aruco,args=("Thread sendo executada",))
 
-        self.runTest()
+        #self.runTest()
+        self.modelIdentification()
 
     def rotateClockwise(self):
         print("[INFO]: Rotating CW")
@@ -215,9 +216,10 @@ class FollowerRobot(object):
         t = []
         x = []
         z = []
-        print("[INFO]: Spinning the robot in 5s...")
-        self.rotateLeftWheelForward()
-        t_end = time() + 1.5
+        print("[INFO]: Moving the robot in 3s...")
+        sleep(3)
+        t_end = time() + 2.5
+        self.goForward()
         while time() < t_end:
             # a camera tem 30 fps, estimou-se que no max pegaremos 30 amostras de posicao por segundo
             # entao o delay no sleep eh baseado nisso, 0.025 em um intervalo de 1.5s gera 60 amostras
@@ -233,8 +235,10 @@ class FollowerRobot(object):
         self.cleanPorts()
         
     def runTest(self):
-        self.rotateLeftWheelForward()
-        sleep(5)
+        #self.rotateLeftWheelBackwards()
+        #self.rotateLeftWheelForward()
+        self.goForward()
+        sleep(1)
         self.stopMotors()
         self.cleanPorts()
 
