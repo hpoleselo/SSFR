@@ -1,3 +1,63 @@
+// Code from PID: https://gist.github.com/ivanseidel/b1693a3be7bb38ff3b63
+// Creating the PID as an object to be instantiated on our main code
+class PID{
+public:
+  
+  double error;
+  double sample;
+  double lastSample;
+  double kP, kI, kD;      
+  double P, I, D;
+  double pid;
+  
+  double setPoint;
+  long lastProcess;
+  
+  PID(double _kP, double _kI, double _kD){
+    kP = _kP;
+    kI = _kI;
+    kD = _kD;
+  }
+
+  // Add new sample is basically reading from the sensor the variable, in our case the velocity
+  void addNewSample(double _sample){
+    sample = _sample;
+  }
+
+  // Gets new variable
+  void setSetPoint(double _setPoint){
+    setPoint = _setPoint;
+  }
+  
+  double process(){
+    // Implementação P ID
+    error = setPoint - sample;
+    float deltaTime = (millis() - lastProcess) / 1000.0;
+    lastProcess = millis();
+    
+    //P
+    P = error * kP;
+    
+    //I
+    I = I + (error * kI) * deltaTime;
+    
+    //D
+    D = (lastSample - sample) * kD / deltaTime;
+    lastSample = sample;
+    
+    // Soma tudo
+    pid = P + I + D;
+    
+    return pid;
+  }
+};
+
+// This is the value of the PWM we used to retrieve the experimental curve, is the point where we want to operate
+const float steadyStatePWM = 120.0;
+
+// Variable used to send the signal from the PID to our actuator, in this case, the motor.
+float controlPWM = 0;
+
 // Pins for connecting Arduino w/ Motor
 int IN1 = 4 ;
 int IN2 = 5 ;
@@ -11,7 +71,13 @@ unsigned long timeold;
 unsigned long actual_time;
 float phi;
 unsigned int pulsesPerRound = 20;   // How many holes one complete rotation in our encoder has
+int sampleTime = 50;                // In miliseconds
 
+// Gains of the PID Controller
+double Kp = 4.0, Ki = 3.7, Kd = 4.0;
+
+// Instantiating our PID controller
+PID SpeedPidControl(Kp,Ki,Kd);
 
 // ISR
 void counter()
@@ -46,17 +112,24 @@ void loop(){
   // PWM goes from 0 to 255, 255 is the full Duty Cycle
 
   // millis() returns the number of milliseconds passed since the Arduino board began running the current program
-  while (millis() <= 9000) {
-        // Sample time
-        if (millis() - timeold >= 50) {
+  while (millis() <= 15000) {
+        // Sample time is set to
+        if (millis() - timeold >= sampleTime) {
           // Disables Interrupt while doing calculation
           detachInterrupt(0);
-          
-          // pulses eh sempre 1, serve como uma flag pra indicar que ta passando pelo buraco
+
+          // Pulses is always 1 because we set it to 0 in the end of the code, it is like a flag that we're detecting something
+          // otherwise it will not calculate the speed of the wheel
           rpm = ((60 * 1000 / pulsesPerRound ) / (millis() - timeold)) * pulses;
           actual_time = millis();
           // convert to angular velocity to feed the model
           phi = (3.1416*rpm)/30;
+          
+          // Pass the read variable to the PID controller
+          SpeedPidControl.addNewSample(phi);
+
+          // PID signal control to our actuator, calculates the error and so on
+          controlPWM = (SpeedPidControl.process() + steadyStatePWM);
           
           // Print in the csv format
           Serial.print(actual_time);
