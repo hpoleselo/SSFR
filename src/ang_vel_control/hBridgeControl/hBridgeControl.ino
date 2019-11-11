@@ -74,7 +74,7 @@ unsigned int pulsesPerRound = 20;   // How many holes one complete rotation in o
 int sampleTime = 50;                // In miliseconds
 
 // Gains of the PID Controller
-double Kp = 4.0, Ki = 3.7, Kd = 4.0;
+double Kp = 10.0, Ki = 1.0, Kd = 1.0;
 
 // Instantiating our PID controller
 PID SpeedPidControl(Kp,Ki,Kd);
@@ -130,6 +130,19 @@ void loop(){
 
           // PID signal control to our actuator, calculates the error and so on
           controlPWM = (SpeedPidControl.process() + steadyStatePWM);
+
+          // If our PID controller tries to subceed the minimum to rotate the motor...
+          if (controlPWM < 60) {
+            //Serial.println("Tentou colocar menos no motor");
+            controlPWM = 60;
+          }
+          
+          // If our PID controller tries to surpass the limit
+          else if (controlPWM > 255) {
+            //Serial.println("Tentou colocar mais no motor");
+            controlPWM = 255;
+          }
+          
           
           // Print in the csv format
           Serial.print(actual_time);
@@ -141,8 +154,8 @@ void loop(){
           
           attachInterrupt(0, counter  , FALLING);
 
-          // Start spinning the wheels
-          analogWrite(motorSpeed,160);
+          // Actuate on motor based on the output from the PID
+          analogWrite(motorSpeed,controlPWM);
         }
   }
 }
