@@ -5,10 +5,14 @@ n = length(w);
 
 % Reconstruct system response w/ 30/255 from duty cycle
 plot(t,w,'r')
+xlabel('Tempo (s)') 
+ylabel('Velocidade angular (rad/s)')
 grid on
 
 %input vel 56 rad/s for 27% from the PWM
 input = 4.92;                       % 4.92V ou 120 bits de 255 do pwm
+
+showTransferFunction = false;
 
 % Three parameter model approximation G3(s) = e^-Ls*k/Ts+1
 y_infinite = 69.66;                % Steady state value, we checked from the grph
@@ -29,14 +33,14 @@ Ao = trapz(tForIntegration,resultant);
 
 % Two parameter G(s) = k/Ts+1
 T1 = Ao/k;
-display("Modelo a dois parametros:");
+disp("Modelo a dois parametros:");
 display(T1);
 display(k);
 
 
 % Model 3 parameters with the area method
 T2 = Ao/k - L;
-display("Modelo a tres parametros:");
+disp("Modelo a tres parametros:");
 display(T2);
 display(k);
 display(L);
@@ -48,16 +52,20 @@ display(L);
 time_cte = 0.63*y_infinite;
 
 
-% Uncomment to check if the two model approximation is good
-%num = [14.1585];
-%den = [0.2571 1];
-%g2 = tf(num,den);
-%step(g2*4.92);
+% Set showTransferFunction to true if you want to check the approximation
+if showTransferFunction == true
+    num = [14.1585];
+    den = [0.2571 1];
+    g2 = tf(num,den);
+    step(g2*input);
+end
 
-% Uncomment to check if the three param. model approx. is good
-%num = [14.1585];
-%den = [0.0159 0.2571 1];
-%g3 = tf(num,den);
-%step(g3*4.92);
+% Likewise...
+if showTransferFunction == true
+    num = [14.1585];
+    den = [0.0159 0.2571 1];
+    g3 = tf(num,den);
+    step(g3*input);
+end
 
 
