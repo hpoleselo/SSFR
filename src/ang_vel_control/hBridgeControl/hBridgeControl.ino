@@ -12,6 +12,7 @@ unsigned long actual_time;
 float phi;
 unsigned int pulsesPerRound = 20;   // How many holes one complete rotation in our encoder has
 
+
 // ISR
 void counter()
 {
@@ -45,7 +46,7 @@ void loop(){
   // PWM goes from 0 to 255, 255 is the full Duty Cycle
 
   // millis() returns the number of milliseconds passed since the Arduino board began running the current program
-  while (millis() <= 100000) {
+  while (millis() <= 9000) {
         // Sample time
         if (millis() - timeold >= 50) {
           // Disables Interrupt while doing calculation
@@ -68,7 +69,7 @@ void loop(){
           attachInterrupt(0, counter  , FALLING);
 
           // Start spinning the wheels
-          analogWrite(motorSpeed,70);
+          analogWrite(motorSpeed,160);
         }
   }
 }
