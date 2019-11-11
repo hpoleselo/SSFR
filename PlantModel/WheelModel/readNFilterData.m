@@ -3,7 +3,7 @@ function [t1, w_filtered] = readNFilterData()
     n = 5;
 
     % Read CSV data
-    S_matrix = readtable('systemVelCurve.csv');    % System response
+    S_matrix = readtable('angVel1.csv');            % System response
     I_matrix = readtable('inputVelCurve.csv');      % Input
 
     % Separate the data in vectors and tranposes
