@@ -1,18 +1,23 @@
 % Reading our filtered data
-[t, w] = readNFilterData();
+%[t, w] = readNFilterData();
 
-n = length(w);     
+n = length(w); 
 
-% Reconstruct system response w/ 30/255 from duty cycle
-plot(t,w,'r')
-xlabel('Tempo (s)') 
-ylabel('Velocidade angular (rad/s)')
-grid on
+% 4.92V ou 120 bits de 255 do pwm
+input = 4.92;
 
-%input vel 56 rad/s for 27% from the PWM
-input = 4.92;                       % 4.92V ou 120 bits de 255 do pwm
+% System input, used for the System Identification
+t2 = t;
+u = input*ones(1,n);
+u(1) = 0;
 
-showTransferFunction = false;
+% Remove points the first 5 elements from a vector
+%w = w(6:end);
+% Remove the last five points from the vector
+%t = t(1:end-5);
+plot(t,w,'r');
+
+showTransferFunction = true;
 
 % Three parameter model approximation G3(s) = e^-Ls*k/Ts+1
 y_infinite = 69.66;                % Steady state value, we checked from the grph
@@ -22,7 +27,7 @@ L = 0.2030 -0.0504;                % 0.1526s
 % Helping function to calculate the Ao, the area between both curves
 hold on
 const = y_infinite*ones(1,n);      % Steady state of our system
-plot(t,const,'k')
+plot(t,const,'y')
 
 resultant = const - w;           % Area between both curves
 lowerLimit = 0.0504;             % Where the curves start
@@ -37,7 +42,6 @@ disp("Modelo a dois parametros:");
 display(T1);
 display(k);
 
-
 % Model 3 parameters with the area method
 T2 = Ao/k - L;
 disp("Modelo a tres parametros:");
@@ -51,13 +55,14 @@ display(L);
 % value we have for the time
 time_cte = 0.63*y_infinite;
 
-
+syms s;
 % Set showTransferFunction to true if you want to check the approximation
 if showTransferFunction == true
     num = [14.1585];
     den = [0.2571 1];
     g2 = tf(num,den);
-    step(g2*input);
+    step(g2*input,'m')
+    
 end
 
 % Likewise...
@@ -65,7 +70,31 @@ if showTransferFunction == true
     num = [14.1585];
     den = [0.0159 0.2571 1];
     g3 = tf(num,den);
-    step(g3*input);
+    step(g3*input,'b');
 end
+
+% TF from the SystemIdentification
+
+if showTransferFunction == true
+     % 0 zero 2 poles
+     num = [1186];
+     den = [1 16.49 84.71];
+     g5 = tf(num,den);
+     step(g5*input,'k')
+end
+
+if showTransferFunction == true
+    % 0 zero 1 pole
+    num = [65.36];
+    den = [1 4.656];
+    g6 = tf(num,den);
+    step(g6*input,'g')
+end
+
+
+
+
+
+
 
 
