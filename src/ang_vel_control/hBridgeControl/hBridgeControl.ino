@@ -81,7 +81,11 @@ unsigned int pulsesPerRound = 20;   // How many holes one complete rotation in o
 int sampleTime = 50;                // In miliseconds
 
 // Gains of the PID Controller
-double Kp = 10.0, Ki = 1.0, Kd = 1.0;
+// 2 parametros
+double Kp = 0.094471, Ki = 0.73446, Kd = -0.000882;
+
+// 3 parametros com atraso com PID Tuner
+// double Kp = 0.134078, Ki = 0.73489, Kd = 0.00518;
 
 // Instantiating our PID controller
 PID SpeedPidControl(Kp,Ki,Kd);
