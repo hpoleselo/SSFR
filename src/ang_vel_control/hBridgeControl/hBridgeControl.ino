@@ -30,7 +30,7 @@ public:
   }
   
   double process(){
-    // Implementação P ID
+    // Implementação PID
     error = setPoint - sample;
     float deltaTime = (millis() - lastProcess) / 1000.0;
     lastProcess = millis();
@@ -54,6 +54,12 @@ public:
 
 // This is the value of the PWM we used to retrieve the experimental curve, is the point where we want to operate
 const float steadyStatePWM = 120.0;
+const float steadyStateSpeed = 69.66;
+
+// Another point of operation (reference), if we want to add the new reference, change the flag to TRUE
+const float secondSteadyStatePWM = 75;
+const float secondSteadyStateSpeed = 54.0; // rad/s from the static model
+bool addAnotherReference = true;
 
 // Variable used to send the signal from the PID to our actuator, in this case, the motor.
 float controlPWM = 0;
@@ -70,6 +76,7 @@ volatile byte pulses;
 unsigned long timeold;
 unsigned long actual_time;
 float phi;
+float error;
 unsigned int pulsesPerRound = 20;   // How many holes one complete rotation in our encoder has
 int sampleTime = 50;                // In miliseconds
 
@@ -112,7 +119,8 @@ void loop(){
   // PWM goes from 0 to 255, 255 is the full Duty Cycle
 
   // millis() returns the number of milliseconds passed since the Arduino board began running the current program
-  while (millis() <= 15000) {
+  // Runs for 30s, 15s in one reference and 15s in another reference
+  while (millis() <= 30000) {
         // Sample time is set to
         if (millis() - timeold >= sampleTime) {
           // Disables Interrupt while doing calculation
@@ -122,40 +130,73 @@ void loop(){
           // otherwise it will not calculate the speed of the wheel
           rpm = ((60 * 1000 / pulsesPerRound ) / (millis() - timeold)) * pulses;
           actual_time = millis();
-          // convert to angular velocity to feed the model
+          
+          // Convert to angular velocity to feed the model
           phi = (3.1416*rpm)/30;
           
           // Pass the read variable to the PID controller
           SpeedPidControl.addNewSample(phi);
-
-          // PID signal control to our actuator, calculates the error and so on
-          controlPWM = (SpeedPidControl.process() + steadyStatePWM);
-
-          // If our PID controller tries to subceed the minimum to rotate the motor...
-          if (controlPWM < 60) {
-            //Serial.println("Tentou colocar menos no motor");
-            controlPWM = 60;
-          }
-          
-          // If our PID controller tries to surpass the limit
-          else if (controlPWM > 255) {
-            //Serial.println("Tentou colocar mais no motor");
-            controlPWM = 255;
-          }
-          
-          
-          // Print in the csv format
-          Serial.print(actual_time);
-          Serial.print(",");
-          Serial.println(phi, DEC);      
           
           timeold = millis();
           pulses = 0;
           
           attachInterrupt(0, counter  , FALLING);
 
-          // Actuate on motor based on the output from the PID
-          analogWrite(motorSpeed,controlPWM);
+          // Reference for our PID is 120, as the model we retrieved
+          if (millis() <= 14999) {
+            
+              // Calculate the error so we can compare with other methods
+              error = phi - steadyStateSpeed;
+              
+              // PID signal control to our actuator, calculates the error and so on
+              controlPWM = (SpeedPidControl.process() + steadyStatePWM);
+    
+              // If our PID controller tries to subceed the minimum to rotate the motor...
+              if (controlPWM < 60) {
+                //Serial.println("Tentou colocar menos no motor");
+                controlPWM = 60;
+              }
+              
+              // If our PID controller tries to surpass the limit
+              else if (controlPWM > 255) {
+                //Serial.println("Tentou colocar mais no motor");
+                controlPWM = 255;
+              }
+              // Actuate on motor based on the output from the PID
+              analogWrite(motorSpeed,controlPWM);
+          }
+
+
+          // Just enters in this condition if we want to add another reference
+          if (addAnotherReference == true and (millis() >= 15000)) {
+              error = phi - secondSteadyStateSpeed;
+              
+              // PID signal control to our actuator, calculates the error and so on
+              controlPWM = (SpeedPidControl.process() + secondSteadyStatePWM);
+    
+              // If our PID controller tries to subceed the minimum to rotate the motor...
+              if (controlPWM < 60) {
+                //Serial.println("Tentou colocar menos no motor");
+                controlPWM = 60;
+              }
+              
+              // If our PID controller tries to surpass the limit
+              else if (controlPWM > 255) {
+                //Serial.println("Tentou colocar mais no motor");
+                controlPWM = 255;
+              }
+              // Actuate on motor based on the output from the PID
+              analogWrite(motorSpeed,controlPWM);
+            
+          }
+          // Print in the csv format
+          Serial.print(actual_time);
+          Serial.print(",");
+          Serial.print(phi, DEC);
+          Serial.print(",");
+          Serial.println(error);     
+
+          
         }
   }
 }
