@@ -1,5 +1,5 @@
 % Reading our filtered data
-%[t, w] = readNFilterData();
+[t, w] = readNFilterData();
 
 n = length(w); 
 
@@ -17,7 +17,7 @@ u(1) = 0;
 %t = t(1:end-5);
 plot(t,w,'r');
 
-showTransferFunction = true;
+showTransferFunction = false;
 
 % Three parameter model approximation G3(s) = e^-Ls*k/Ts+1
 y_infinite = 69.66;                % Steady state value, we checked from the grph
@@ -27,7 +27,9 @@ L = 0.2030 -0.0504;                % 0.1526s
 % Helping function to calculate the Ao, the area between both curves
 hold on
 const = y_infinite*ones(1,n);      % Steady state of our system
-plot(t,const,'y')
+plot(t,const,'k')
+xlabel('Tempo (s)')
+ylabel('Velocidade Angular (rad/s)')
 
 resultant = const - w;           % Area between both curves
 lowerLimit = 0.0504;             % Where the curves start
