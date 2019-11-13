@@ -12,23 +12,21 @@ Install git:
 
 ``` $ sudo apt-get install git ```
 
-Install pip:
-
-``` $ wget https://bootstrap.pypa.io/get-pip.py ```
-
-``` $ sudo python2.7 get-pip.py ```
-
-Install OpenCV with Python in the Rpi:
+Install OpenCV with Python in the Rpi in order to make use of the ArUco library:
 
 ``` $ sudo apt-get install python-opencv ```
 
-Clone the repository to anywhere:
+Clone the repository anywhere you want:
 
 ``` $ git clone https://github.com/hpoleselo/SSFR.git ```
 
 ## Usage
 
-If you want to check model retrieving, check the folder ``` /PlantModel ``` with MATLAB.
+If you want to check how we retrieve the model for the control, check the folder ``` PlantModel ``` with MATLAB.
+
+## Lessons Learned
+
+Check the file [linque] to the next time we decide building a robot from scratch...
 
 ## Authors
 
