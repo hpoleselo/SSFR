@@ -1,5 +1,5 @@
 # Stationary Spinning Follower Robot
-A robot that uses fiducial markers (ArUco) to obtain the relative position to the marker and adjusts its position using PID control to follow the moving marker.
+A robot that uses fiducial markers (ArUco) to obtain the relative position to the marker and adjusts its position using PID control to follow the moving marker. You can find also separately the modelling of a DC motor which we used on SSFR.
 
 ![setup](https://user-images.githubusercontent.com/24254286/68078356-28faa900-fdb3-11e9-94ae-d9308d47922d.jpg)
 
@@ -33,3 +33,7 @@ Check the file [linque] to the next time we decide building a robot from scratch
 * **Henrique Poleselo** - [hpoleselo](https://github.com/hpoleselo)
 * **Jesse de Oliveira Santana Alves**
 * **Luis Gustavo Nunes Christensen**
+
+## Professor
+
+**Humberto Xavier de Araujo**
