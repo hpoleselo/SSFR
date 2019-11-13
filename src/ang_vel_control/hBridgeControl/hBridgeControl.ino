@@ -82,10 +82,10 @@ int sampleTime = 50;                // In miliseconds
 
 // Gains of the PID Controller
 // 2 parametros
-double Kp = 0.094471, Ki = 0.73446, Kd = -0.000882;
+//double Kp = 0.094471, Ki = 0.73446, Kd = -0.000882;
 
 // 3 parametros com atraso com PID Tuner
-// double Kp = 0.134078, Ki = 0.73489, Kd = 0.00518;
+double Kp = 0.134078, Ki = 0.73489, Kd = 0.00518;
 
 // Instantiating our PID controller
 PID SpeedPidControl(Kp,Ki,Kd);
@@ -194,8 +194,8 @@ void loop(){
             
           }
           // Print in the csv format
-          Serial.print(actual_time);
-          Serial.print(",");
+          //Serial.print(actual_time);
+          //Serial.print(",");
           Serial.print(phi, DEC);
           Serial.print(",");
           Serial.println(error);     
