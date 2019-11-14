@@ -31,8 +31,8 @@ Check the file [linque] to the next time we decide building a robot from scratch
 ## Authors
 
 * **Henrique Poleselo** - [hpoleselo](https://github.com/hpoleselo)
-* **Jesse de Oliveira Santana Alves**
-* **Luis Gustavo Nunes Christensen**
+* **Jesse de Oliveira Santana Alves** - [Jessalves11](https://github.com/Jessalves11)
+* **Luis Gustavo Nunes Christensen** - [Goustaf](https://github.com/goustaf)
 
 ## Professor
 
